@@ -1,26 +1,22 @@
 buildscript {
     repositories {
-        jcenter()
-        google()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+        classpath "gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.9"
     }
 }
 
 plugins {
-    id 'com.github.sherter.google-java-format' version '0.8'
-    id 'com.github.dcendents.android-maven' version '2.0'
+    id 'com.github.sherter.google-java-format' version '0.9'
+    id 'com.android.library'
 }
 
-
-apply plugin: 'com.android.library'
-apply plugin: 'com.jfrog.bintray'
-
-
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         minSdkVersion 15
@@ -58,10 +54,8 @@ android {
 }
 
 dependencies {
-    // implementation fileTree(include: ['*.jar'], dir: 'libs')
-    // implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'junit:junit:4.12'
-    implementation 'androidx.test:runner:1.1.1'
+    implementation 'junit:junit:4.13.2'
+    implementation 'androidx.test:runner:1.4.0'
 }
 
 googleJavaFormat {
@@ -87,83 +81,42 @@ artifacts {
     archives sourcesJar
 }
 
-// bintray packaging information
-install {
-    repositories.mavenInstaller {
-        pom.project {
-            name ARTIFACT_ID
-            description
-                'Android library for triggering device-side code from ' +
-                'host-side Mobly tests.'
-            url 'https://github.com/google/mobly-snippet-lib'
 
-            packaging 'aar'
-            groupId GROUP_ID
-            artifactId ARTIFACT_ID
-            version VERSION_NAME
-            name ARTIFACT_ID
-
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-            scm {
-                connection 'https://github.com/google/mobly-snippet-lib.git'
-                url 'https://github.com/google/mobly-snippet-lib'
-            }
-        }
-    }
-}
-
-// Try loading bintray.properties. It's okay if this fails; we might not be
-// uploading.
-def bintrayPropFile = project.rootProject.file('bintray.properties')
-if (bintrayPropFile.exists()) {
-    Properties prop = new Properties()
-    prop.load(new FileInputStream(bintrayPropFile))
-    project.ext.bintrayUser = prop.user
-    project.ext.bintrayKey = prop.key
-} else {
-    project.ext.bintrayUser = null
-    project.ext.bintrayKey = null
-}
-
-gradle.taskGraph.whenReady { graph ->
-    if (graph.hasTask(bintrayUpload)) {
-        if (project.bintrayUser == null || project.bintrayKey == null) {
-            if (bintrayPropFile.exists()) {
-                throw new IllegalArgumentException(
-                    bintrayPropFile.toString()
-                    + ' does not contain "user" or "key" props')
-            } else {
-                throw new FileNotFoundException(
-                    'bintray.properties not found at path: ' + bintrayPropFile)
-            }
-        }
-    }
-}
-
-bintray {
-    user = project.bintrayUser
-    key = project.bintrayKey
-    configurations = ['archives']
-    pkg {
-        repo = 'mobly'
-        name = ARTIFACT_ID
-        userOrg = 'google'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/google/mobly-snippet-lib.git'
-        version {
-            name = VERSION_NAME
-            desc = 'Mobly Snippet Lib ' + VERSION_NAME
-            released  = new Date()
-            vcsTag = VERSION_NAME
-        }
-    }
-}
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate() lifecycle method.
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            // Creates a Maven publication called "release".
+//            release(MavenPublication) {
+//                // Applies the component for the release build variant.
+//                from components.release
+//
+//                name ARTIFACT_ID
+//                groupId GROUP_ID
+//                artifactId ARTIFACT_ID
+//                version VERSION_NAME
+//                description
+//                'Android library for triggering device-side code from ' +
+//                        'host-side Mobly tests.'
+//                url 'https://github.com/google/mobly-snippet-lib'
+//
+//                licenses {
+//                    license {
+//                        name 'The Apache Software License, Version 2.0'
+//                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//                        distribution 'repo'
+//                    }
+//                }
+//
+//                scm {
+//                    connection 'https://github.com/google/mobly-snippet-lib.git'
+//                    url 'https://github.com/google/mobly-snippet-lib'
+//                }
+//            }
+//        }
+//    }
+//}
 
 // Open lint's HTML report in your default browser or viewer.
 task openLintReport(type: Exec) {
@@ -174,7 +127,7 @@ task openLintReport(type: Exec) {
         cmd = "xdg-open"
     } else if (platform.contains("mac os x")) {
         cmd = "open"
-    } else if (platform.contains("windows")) {
+    } else if (platform.contaiafterEvaluatens("windows")) {
         cmd = "launch"
     }
     commandLine cmd, lint_report
@@ -186,4 +139,3 @@ task presubmit {
         println "Fix any lint issues you see. When it looks good, submit the pull request."
     }
 }
-
