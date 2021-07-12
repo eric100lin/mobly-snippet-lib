@@ -16,6 +16,7 @@
 
 package com.google.android.mobly.snippet.example6;
 
+import com.example.tutorial.protos.Person;
 import com.google.android.mobly.snippet.Snippet;
 import com.google.android.mobly.snippet.rpc.Rpc;
 import com.google.android.mobly.snippet.util.Log;
@@ -50,6 +51,28 @@ public class ExampleSnippet implements Snippet {
             obj.setMyValue(newValue);
         }
         return objects;
+    }
+
+    @Rpc(description = "Pass a protobuf message as a snippet parameter.")
+    public String passProtobufMessageToSnippet(Person person) {
+        Log.i("Person id: " + person.getId());
+        Log.i("Person email: " + person.getEmail());
+        return "The id of Person '" + person.getId() + "' is: '" + person.getName() + "'";
+    }
+
+    @Rpc(description = "Returns a protobuf message from snippet.")
+    public Person returnProtobufMessageFromSnippet(String name) {
+        Person.Builder person = Person.newBuilder();
+        person.setId(666);
+        person.setName(name);
+        person.setEmail("hello@gmail.com");
+
+        Person.PhoneNumber.Builder phoneNumber =
+            Person.PhoneNumber.newBuilder().setNumber("0800-123456");
+        phoneNumber.setType(Person.PhoneType.WORK);
+        person.addPhones(phoneNumber);
+
+        return person.build();
     }
 
     @Override

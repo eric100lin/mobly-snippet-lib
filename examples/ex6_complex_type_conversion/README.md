@@ -100,9 +100,18 @@ This folder contains a fully working example of a standalone snippet apk.
 
 1.  Use Mobly's `snippet_shell` from mobly to trigger the Rpc methods:
 
+        PYTHONPATH=build/generated/source/proto/debug/python \
         snippet_shell.py com.google.android.mobly.snippet.example6
 
         >>> s.passComplexTypeToSnippet({'Value': 'Hello'})
         'The value in CustomType is: Hello'
         >>> s.returnComplexTypeFromSnippet('Bye')
         {'Value': 'Bye'}
+
+        >>> import addressbook_pb2
+        >>> person = addressbook_pb2.Person()
+        >>> s.passProtobufMessageToSnippet(
+          'proto_bytes': list(person.SerializeToString()),
+        })
+        >>> b = s.returnProtobufMessageFromSnippet("Hello")
+        >>> person.ParseFromString(bytes(b['proto_bytes']))
